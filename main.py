@@ -45,12 +45,35 @@ def get_todo(id:int):
 	return todo
 
 @app.put("/todo/{id}")
-def update_todo(id:int):
-	return "Update task by id"
+def update_todo(id:int, todoTask:ToDoRequest):
+
+	session = Session(bind=engine,expire_on_commit=False)
+
+	todo = session.query(TODO).get(id)
+
+	if todo:
+		todo.task = todoTask.task
+		session.commit()
+		session.close()
+		return todo
+	else:
+		raise HTTPException(status_code=404, detail=f"todo item with id {id} not found")
+	
 
 @app.delete("/todo/{id}")
 def delete_todo(id:int):
-	return "Delete Task by id"
+
+	session = Session(bind=engine,expire_on_commit=False)
+
+	todo = session.query(TODO).get(id)
+
+	if todo:
+		session.delete(todo)
+		session.commit()
+		session.close()
+		return "Task deleted successfully"
+	else:
+		raise HTTPException(status_code=404, detail=f"todo item with id {id} not found")
 
 @app.get("/todo")
 def getAll_todo():
