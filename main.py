@@ -1,10 +1,8 @@
 from fastapi import FastAPI, status, HTTPException
-from database import Base, engine, TODO
-from pydantic import BaseModel
+from database import Base, engine
 from sqlalchemy.orm import Session
-
-class ToDoRequest(BaseModel):
-	task:str
+import models
+import schemas
 
 Base.metadata.create_all(engine)
 
@@ -15,11 +13,11 @@ def root():
 	return "TODO"
 
 @app.post("/todo",status_code=status.HTTP_201_CREATED)
-def create_todo(todo: ToDoRequest):
+def create_todo(todo: schemas.ToDoRequest):
 
 	session = Session(bind=engine, expire_on_commit=False)
 
-	Tododb = TODO(task = todo.task)
+	Tododb = models.TODO(task = todo.task)
 
 	session.add(Tododb)
 	session.commit()
@@ -35,7 +33,7 @@ def get_todo(id:int):
 
 	session = Session(bind=engine,expire_on_commit=False)
 
-	todo = session.query(TODO).get(id)
+	todo = session.query(models.TODO).get(id)
 
 	session.close()
 
@@ -45,11 +43,11 @@ def get_todo(id:int):
 	return todo
 
 @app.put("/todo/{id}")
-def update_todo(id:int, todoTask:ToDoRequest):
+def update_todo(id:int, todoTask:schemas.ToDoRequest):
 
 	session = Session(bind=engine,expire_on_commit=False)
 
-	todo = session.query(TODO).get(id)
+	todo = session.query(models.TODO).get(id)
 
 	if todo:
 		todo.task = todoTask.task
@@ -65,7 +63,7 @@ def delete_todo(id:int):
 
 	session = Session(bind=engine,expire_on_commit=False)
 
-	todo = session.query(TODO).get(id)
+	todo = session.query(models.TODO).get(id)
 
 	if todo:
 		session.delete(todo)
@@ -79,7 +77,7 @@ def delete_todo(id:int):
 def getAll_todo():
 	session = Session(bind=engine,expire_on_commit=False)
 
-	tasks = session.query(TODO).all()
+	tasks = session.query(models.TODO).all()
 
 	session.close()
 
